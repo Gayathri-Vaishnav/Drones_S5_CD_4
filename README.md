@@ -1,5 +1,5 @@
 
-<img width="900" height="90" alt="image" src="https://github.com/user-attachments/assets/a9600b74-0941-4c72-833f-af076c559691" />
+<img width="700" height="90" alt="image" src="https://github.com/user-attachments/assets/a9600b74-0941-4c72-833f-af076c559691" />
 
 # Introduction_to_drones_project-22AIE448
 ## Autonomous Landing of Quadrotor UAV ( using AprilTags Vision Positioning and Quaternion-based Attitude Representation )
