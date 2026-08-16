@@ -1,7 +1,5 @@
 # Introduction_to_drones_project-22AIE448
-# Autonomous Landing of Quadrotor UAV
-## using AprilTags Vision Positioning
-## and Quaternion-based Attitude Representation
+## Autonomous Landing of Quadrotor UAV ( using AprilTags Vision Positioning and Quaternion-based Attitude Representation )
 
 
 ## 1. Introduction and Motivation
