@@ -6,26 +6,26 @@
 
 ## 1. Introduction 
 
-Autonomous landing is one of the most critical and difficult tasks for a quadrotor UAV. In many real-world situations (between tall buildings, indoors, under trees, or in GPS-denied environments), the GPS signal becomes weak or completely unavailable. In such cases, the drone cannot rely on satellite navigation for accurate landing.
-Vision-based methods provide a practical solution. By mounting a downward-facing camera on the drone and placing known visual markers (AprilTags) on the landing platform, the drone can calculate its relative position and orientation in real time and land accurately without GPS.
+Autonomous landing is one of the most critical and difficult tasks for a quadrotor UAV. In many real-world situations (between tall buildings, indoors, under trees, or in GPS-denied environments), the GPS signal becomes weak or completely unavailable. In such cases, the drone cannot rely on satellite navigation for accurate landing.\
+Vision-based methods provide a practical solution. By mounting a downward-facing camera on the drone and placing known visual markers (AprilTags) on the landing platform, the drone can calculate its relative position and orientation in real time and land accurately without GPS.\
 This project is based on the research paper “UAV Autonomous Landing Technology Based on AprilTags Vision Positioning Algorithm” (Li et al., 2019). We take the core idea of the paper and improve it by introducing Unit Quaternions and the Sandwich Operator for attitude representation, which is a direct application of the mathematical concepts taught in our course 22AIE448.
 
-## 2.Base paper explanation
+## 2.  Base paper explanation
 
-The base paper proposes an onboard solution for autonomous landing of a quadrotor using AprilTags. The key ideas of the paper are:
-•	A monocular camera is used to detect AprilTags placed on the landing platform.
-•	Two tags of different sizes are used – a large tag for high altitude and a small tag for low altitude.
-•	The relative position and orientation (pose) of the drone with respect to the tag are calculated using the AprilTag algorithm.
-•	A classical PID controller is used to control the velocity of the drone.
+The base paper proposes an onboard solution for autonomous landing of a quadrotor using AprilTags. The key ideas of the paper are:\
+•	A monocular camera is used to detect AprilTags placed on the landing platform.\
+•	Two tags of different sizes are used – a large tag for high altitude and a small tag for low altitude.\
+•	The relative position and orientation (pose) of the drone with respect to the tag are calculated using the AprilTag algorithm.\
+•	A classical PID controller is used to control the velocity of the drone.\
 •	Experiments showed landing error less than 1% and good tracking performance on a moving platform.
 
-### 2.1Base paper math:
+### 2.1  Base paper math:
 
 
 
-### 2.2Base paper link:
+### 2.2  Base paper link:
 
-### 3.Complete System Pipeline
+### 3.  Complete System Pipeline
 The full working of our system can be understood in the following steps:
 1.	Image Capture: A downward-facing monocular camera continuously captures images of the ground.
 2.	AprilTag Detection: The system detects the AprilTag(s) in the image and finds the four corner points.
@@ -37,8 +37,8 @@ The full working of our system can be understood in the following steps:
 
 ### 3.References
 
-[1] Z. Li, Y. Chen, H. Lu, H. Wu and L. Cheng, “UAV Autonomous Landing Technology Based on AprilTags Vision Positioning Algorithm,” Proceedings of the 38th Chinese Control Conference, Guangzhou, China, July 2019, pp. 8148–8153.
-[2] E. Olson, “AprilTag: A robust and flexible visual fiducial system,” IEEE International Conference on Robotics and Automation (ICRA), 2011.
+[1] Z. Li, Y. Chen, H. Lu, H. Wu and L. Cheng, “UAV Autonomous Landing Technology Based on AprilTags Vision Positioning Algorithm,” Proceedings of the 38th Chinese Control Conference, Guangzhou, China, July 2019, pp. 8148–8153.\
+[2] E. Olson, “AprilTag: A robust and flexible visual fiducial system,” IEEE International Conference on Robotics and Automation (ICRA), 2011.\
 [3] Course Notes on Quaternions, Introduction to Drones – 22AIE448, School of Artificial Intelligence, Amrita Vishwa Vidyapeetham (Dr. Sunil Kumar S and Prof. K. P. Soman), July 2026.
 
 
