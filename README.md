@@ -16,7 +16,7 @@ The base paper proposes an onboard solution for autonomous landing of a quadroto
 •	A monocular camera is used to detect AprilTags placed on the landing platform.\
 •	Two tags of different sizes are used – a large tag for high altitude and a small tag for low altitude.\
 •	The relative position and orientation (pose) of the drone with respect to the tag are calculated using the AprilTag algorithm.\
-•	A classical PID controller is used to control the velocity of the drone.\
+•	A classical PID controller is used to control the  velocity of the drone.\
 •	Experiments showed landing error less than 1% and good tracking performance on a moving platform.
 
 ### 2.1  Base paper math:
