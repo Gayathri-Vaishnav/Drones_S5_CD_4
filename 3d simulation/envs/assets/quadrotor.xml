@@ -1,0 +1,217 @@
+<mujoco model="urban_street_quadrotor_autoland">
+
+  <compiler angle="radian" autolimits="true" balanceinertia="true"/>
+  <option gravity="0 0 -9.81" timestep="0.002" integrator="RK4"/>
+
+  <default>
+    <joint damping="0.002"/>
+    <geom condim="4" friction="1.0 0.05 0.005" solref="0.01 1" solimp="0.9 0.95 0.001"/>
+  </default>
+
+  <asset>
+    <!-- Warm Golden-Hour Skybox Matching Reference Image -->
+    <texture name="sky" type="skybox" builtin="gradient" rgb1="0.45 0.40 0.35" rgb2="0.18 0.14 0.20" width="512" height="512"/>
+
+    <!-- High-Resolution Textures -->
+    <texture name="pad_tex" type="2d" file="pad_texture.png"/>
+    <material name="pad_mat" texture="pad_tex" texrepeat="1 1" shininess="0.2" specular="0.1"/>
+
+    <texture name="street_tex" type="2d" file="street_tex.png"/>
+    <material name="street_mat" texture="street_tex" texrepeat="4 8" shininess="0.08" specular="0.05"/>
+
+    <texture name="brick_tex" type="2d" file="brick_tex.png"/>
+    <material name="brick_mat" texture="brick_tex" texrepeat="3 3" shininess="0.05"/>
+
+    <texture name="stucco_tex" type="2d" file="stucco_tex.png"/>
+    <material name="stucco_mat" texture="stucco_tex" texrepeat="4 4" shininess="0.05"/>
+
+    <texture name="barricade_tex" type="2d" file="barricade_tex.png"/>
+    <material name="barricade_mat" texture="barricade_tex" texrepeat="1 1" shininess="0.1"/>
+
+    <!-- Urban Materials -->
+    <material name="roof_sheet" rgba="0.42 0.38 0.36 1.0" shininess="0.3"/>
+    <material name="sidewalk_concrete" rgba="0.55 0.52 0.48 1.0" shininess="0.1"/>
+    <material name="wood_pole" rgba="0.38 0.30 0.22 1.0"/>
+    <material name="metal_dark" rgba="0.22 0.24 0.26 1.0" shininess="0.6"/>
+    <material name="window_glass" rgba="0.10 0.12 0.16 1.0" shininess="0.9" specular="0.8"/>
+    <material name="hydrant_red" rgba="0.85 0.18 0.12 1.0" shininess="0.5"/>
+    <material name="car_blue" rgba="0.20 0.45 0.85 1.0" shininess="0.7"/>
+
+    <!-- Reference Drone Materials (Matte Charcoal & Gunmetal) -->
+    <material name="matte_charcoal" rgba="0.15 0.17 0.19 1.0" shininess="0.3" specular="0.2"/>
+    <material name="body_dark_accent" rgba="0.10 0.11 0.12 1.0" shininess="0.5" specular="0.3"/>
+    <material name="motor_gunmetal" rgba="0.35 0.38 0.42 1.0" shininess="0.8" specular="0.6"/>
+    <material name="hub_black" rgba="0.05 0.05 0.05 1.0"/>
+    <material name="led_glow_blue" rgba="0.20 0.65 1.0 1.0" emission="1.5"/>
+    <material name="led_glow_red" rgba="1.0 0.25 0.25 1.0" emission="1.2"/>
+    <material name="prop_translucent" rgba="0.12 0.14 0.16 0.55"/>
+    <material name="lens_glass" rgba="0.02 0.02 0.05 1.0" shininess="1.0" specular="0.9"/>
+  </asset>
+
+  <visual>
+    <headlight ambient="0.55 0.50 0.45" diffuse="0.80 0.72 0.65" specular="0.25 0.22 0.18"/>
+    <rgba fog="0.25 0.20 0.22 1"/>
+    <quality shadowsize="2048"/>
+  </visual>
+
+  <worldbody>
+    <!-- Ground Road Surface (Corridor Street) -->
+    <geom name="ground" type="plane" size="40 40 0.1" material="street_mat" pos="0 0 0"/>
+
+    <!-- =================================================================== -->
+    <!-- URBAN ENVIRONMENT MODEL                                            -->
+    <!-- =================================================================== -->
+
+    <!-- Left Side: Industrial Warehouses with Gabled Roofs & Garage Doors -->
+    <body name="warehouse_block_left" pos="-5.5 0 0">
+      <geom name="wh_wall_1" type="box" size="2.5 14.0 2.2" pos="0 0 2.2" material="brick_mat" contype="1" conaffinity="1"/>
+      <geom name="wh_roof_1" type="box" size="2.6 3.2 0.1" pos="0 -8.0 4.6" euler="0 0.45 0" material="roof_sheet"/>
+      <geom name="wh_roof_2" type="box" size="2.6 3.2 0.1" pos="0 -2.0 4.6" euler="0 0.45 0" material="roof_sheet"/>
+      <geom name="wh_roof_3" type="box" size="2.6 3.2 0.1" pos="0 4.0 4.6" euler="0 0.45 0" material="roof_sheet"/>
+      <geom name="wh_roof_4" type="box" size="2.6 3.2 0.1" pos="0 10.0 4.6" euler="0 0.45 0" material="roof_sheet"/>
+
+      <geom name="garage_door_1" type="box" size="0.05 1.2 1.4" pos="2.52 -6.0 1.4" material="metal_dark"/>
+      <geom name="garage_door_2" type="box" size="0.05 1.2 1.4" pos="2.52 -1.0 1.4" material="metal_dark"/>
+      <geom name="garage_door_3" type="box" size="0.05 1.2 1.4" pos="2.52 4.0 1.4" material="metal_dark"/>
+      <geom name="garage_door_4" type="box" size="0.05 1.2 1.4" pos="2.52 9.0 1.4" material="metal_dark"/>
+      <geom name="sidewalk_l" type="box" size="0.8 14.0 0.08" pos="3.3 0 0.08" material="sidewalk_concrete"/>
+    </body>
+
+    <!-- Right Side: Weathered Ochre Stucco Multi-Story Apartment Building -->
+    <body name="building_block_right" pos="5.5 0 0">
+      <geom name="bld_main" type="box" size="2.5 14.0 3.8" pos="0 0 3.8" material="stucco_mat" contype="1" conaffinity="1"/>
+      <geom name="bld_cornice" type="box" size="2.65 14.2 0.12" pos="0 0 7.6" material="sidewalk_concrete"/>
+
+      <geom name="win_1_1" type="box" size="0.05 0.7 0.6" pos="-2.52 -8.0 2.2" material="window_glass"/>
+      <geom name="win_1_2" type="box" size="0.05 0.7 0.6" pos="-2.52 -4.0 2.2" material="window_glass"/>
+      <geom name="win_1_3" type="box" size="0.05 0.7 0.6" pos="-2.52 0.0 2.2" material="window_glass"/>
+      <geom name="win_1_4" type="box" size="0.05 0.7 0.6" pos="-2.52 4.0 2.2" material="window_glass"/>
+      <geom name="win_1_5" type="box" size="0.05 0.7 0.6" pos="-2.52 8.0 2.2" material="window_glass"/>
+
+      <geom name="win_2_1" type="box" size="0.05 0.7 0.6" pos="-2.52 -8.0 5.2" material="window_glass"/>
+      <geom name="win_2_2" type="box" size="0.05 0.7 0.6" pos="-2.52 -4.0 5.2" material="window_glass"/>
+      <geom name="win_2_3" type="box" size="0.05 0.7 0.6" pos="-2.52 0.0 5.2" material="window_glass"/>
+      <geom name="win_2_4" type="box" size="0.05 0.7 0.6" pos="-2.52 4.0 5.2" material="window_glass"/>
+      <geom name="win_2_5" type="box" size="0.05 0.7 0.6" pos="-2.52 8.0 5.2" material="window_glass"/>
+
+      <geom name="sidewalk_r" type="box" size="0.8 14.0 0.08" pos="-3.3 0 0.08" material="sidewalk_concrete"/>
+      <geom name="hydrant_base" type="cylinder" size="0.09 0.22" pos="-2.7 1.5 0.30" material="hydrant_red"/>
+      <geom name="hydrant_top" type="sphere" size="0.09" pos="-2.7 1.5 0.52" material="hydrant_red"/>
+    </body>
+
+    <!-- Utility Telephone Poles & Street Props -->
+    <body name="street_props" pos="0 0 0">
+      <geom name="pole_1" type="cylinder" size="0.08 3.5" pos="-2.1 -2.0 3.5" material="wood_pole"/>
+      <geom name="pole_1_cross" type="box" size="0.05 0.6 0.05" pos="-2.1 -2.0 6.8" material="wood_pole"/>
+      <geom name="pole_2" type="cylinder" size="0.08 3.5" pos="2.1 4.5 3.5" material="wood_pole"/>
+      <geom name="pole_2_cross" type="box" size="0.05 0.6 0.05" pos="2.1 4.5 6.8" material="wood_pole"/>
+    </body>
+
+    <!-- Concrete Red-and-White Hazard Barricades (Non-overlapping, Clear of Landing Pad) -->
+    <body name="barricades" pos="0 0 0">
+      <!-- Foreground Barricades (South of Landing Pad) -->
+      <geom name="barr_1" type="box" size="0.22 0.75 0.42" pos="-1.1 -6.0 0.42" euler="0 0 0.35" material="barricade_mat" contype="1" conaffinity="1"/>
+      <geom name="barr_2" type="box" size="0.22 0.75 0.42" pos="1.1 -5.5 0.42" euler="0 0 -0.25" material="barricade_mat" contype="1" conaffinity="1"/>
+      <geom name="barr_3" type="box" size="0.20 0.65 0.42" pos="0.9 -2.5 0.42" euler="0 0 0.65" material="barricade_mat" contype="1" conaffinity="1"/>
+
+      <!-- Background Barricades (North of Landing Pad, clear of 0,0) -->
+      <geom name="barr_5" type="box" size="0.20 0.65 0.42" pos="0.8 3.2 0.42" euler="0 0 0.45" material="barricade_mat" contype="1" conaffinity="1"/>
+      <geom name="barr_6" type="box" size="0.20 0.65 0.42" pos="-0.8 4.8 0.42" euler="0 0 -0.20" material="barricade_mat" contype="1" conaffinity="1"/>
+      <geom name="barr_side" type="box" size="0.20 0.60 0.42" pos="2.2 -1.5 0.42" euler="0 0 0.85" material="barricade_mat" contype="1" conaffinity="1"/>
+    </body>
+
+    <!-- Distant Street Curve, Back Walls & Parked Vehicle -->
+    <body name="distant_street" pos="0 14.0 0">
+      <geom name="back_wall" type="box" size="6.5 0.4 1.2" pos="0 0 1.2" material="brick_mat"/>
+      <geom name="car_chassis" type="box" size="0.85 1.6 0.35" pos="1.2 -1.5 0.45" material="car_blue"/>
+      <geom name="car_cabin" type="box" size="0.75 0.95 0.28" pos="1.2 -1.7 0.95" material="window_glass"/>
+    </body>
+
+    <!-- =================================================================== -->
+    <!-- TARGET LANDING PLATFORM & VEHICLE (Completely Unobstructed at 0,0)   -->
+    <!-- =================================================================== -->
+    <body name="landing_pad" pos="0 0 0.008">
+      <geom name="pad_surface" type="box" size="0.75 0.75 0.005" material="pad_mat" contype="1" conaffinity="1"/>
+      <geom name="pad_border_y" type="box" size="0.78 0.78 0.002" rgba="0.85 0.75 0.15 1" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- Dynamic Ground Vehicle (UGV) -->
+    <body name="ground_vehicle" pos="1.2 -3.0 0.08">
+      <joint name="vehicle_x" type="slide" axis="1 0 0" range="-4 4"/>
+      <joint name="vehicle_y" type="slide" axis="0 1 0" range="-10 10"/>
+      <geom name="veh_body" type="box" size="0.45 0.35 0.07" rgba="0.25 0.45 0.80 1" contype="1" conaffinity="1"/>
+      <geom name="veh_deck" type="box" size="0.32 0.32 0.006" pos="0 0 0.075" material="pad_mat"/>
+    </body>
+
+    <!-- =================================================================== -->
+    <!-- ENLARGED SLEEK ENTERPRISE QUADROTOR (Prominent & High-Fidelity)      -->
+    <!-- =================================================================== -->
+    <body name="drone" pos="1.2 -0.8 12.0">
+      <freejoint name="drone_free"/>
+      <inertial pos="0 0 0" mass="3.5" diaginertia="0.045 0.045 0.080"/>
+
+      <!-- 1. Fuselage (Enlarged & Prominent) -->
+      <geom name="body_main" type="box" size="0.26 0.10 0.055" material="matte_charcoal" contype="1" conaffinity="1"/>
+      <geom name="body_top_lid" type="box" size="0.22 0.08 0.015" pos="0 0 0.060" material="body_dark_accent" contype="0" conaffinity="0"/>
+      <geom name="body_nose_slope" type="capsule" size="0.06" fromto="0.20 0 0.015 0.28 0 -0.015" material="matte_charcoal"/>
+      <geom name="body_tail_taper" type="capsule" size="0.05" fromto="-0.20 0 0.015 -0.28 0 0.020" material="matte_charcoal"/>
+
+      <!-- 2. Nose Vision Sensors -->
+      <geom name="sensor_eye_l" type="cylinder" size="0.012 0.006" pos="0.27 0.038 0.008" material="lens_glass" euler="0 1.5708 0"/>
+      <geom name="sensor_eye_r" type="cylinder" size="0.012 0.006" pos="0.27 -0.038 0.008" material="lens_glass" euler="0 1.5708 0"/>
+
+      <!-- 3. Gimbal Camera -->
+      <geom name="gimbal_arm" type="cylinder" size="0.014 0.022" pos="0.19 0 -0.055" material="motor_gunmetal"/>
+      <geom name="gimbal_body" type="sphere" size="0.040" pos="0.19 0 -0.085" material="body_dark_accent"/>
+      <geom name="gimbal_lens" type="cylinder" size="0.022 0.010" pos="0.22 0 -0.085" material="lens_glass" euler="0 1.5708 0"/>
+
+      <!-- Onboard Downward Camera Site -->
+      <camera name="onboard_cam" pos="0.15 0 -0.09" euler="3.14159 0 0" fovy="60"/>
+
+      <!-- 4. Four Large Rectangular Cantilever Arms -->
+      <geom name="arm_fl" type="capsule" size="0.020" fromto="0.14 0.10 0.015 0.32 0.36 0.010" material="matte_charcoal"/>
+      <geom name="arm_fr" type="capsule" size="0.020" fromto="0.14 -0.10 0.015 0.32 -0.36 0.010" material="matte_charcoal"/>
+      <geom name="arm_rl" type="capsule" size="0.020" fromto="-0.14 0.10 0.015 -0.32 0.36 0.020" material="matte_charcoal"/>
+      <geom name="arm_rr" type="capsule" size="0.020" fromto="-0.14 -0.10 0.015 -0.32 -0.36 0.020" material="matte_charcoal"/>
+
+      <!-- 5. Gunmetal Motor Pods & Glowing Blue Navigation LEDs -->
+      <geom name="motor_base_fl" type="cylinder" size="0.034 0.022" pos="0.32 0.36 0.020" material="body_dark_accent"/>
+      <geom name="motor_top_fl" type="cylinder" size="0.030 0.014" pos="0.32 0.36 0.052" material="motor_gunmetal"/>
+      <geom name="led_fl" type="box" size="0.012 0.020 0.008" pos="0.32 0.395 0.008" material="led_glow_blue"/>
+      <geom name="prop_fl" type="cylinder" size="0.20 0.003" pos="0.32 0.36 0.068" material="prop_translucent" contype="0" conaffinity="0"/>
+
+      <geom name="motor_base_fr" type="cylinder" size="0.034 0.022" pos="0.32 -0.36 0.020" material="body_dark_accent"/>
+      <geom name="motor_top_fr" type="cylinder" size="0.030 0.014" pos="0.32 -0.36 0.052" material="motor_gunmetal"/>
+      <geom name="led_fr" type="box" size="0.012 0.020 0.008" pos="0.32 -0.395 0.008" material="led_glow_blue"/>
+      <geom name="prop_fr" type="cylinder" size="0.20 0.003" pos="0.32 -0.36 0.068" material="prop_translucent" contype="0" conaffinity="0"/>
+
+      <geom name="motor_base_rl" type="cylinder" size="0.034 0.022" pos="-0.32 0.36 0.032" material="body_dark_accent"/>
+      <geom name="motor_top_rl" type="cylinder" size="0.030 0.014" pos="-0.32 0.36 0.064" material="motor_gunmetal"/>
+      <geom name="led_rl" type="sphere" size="0.009" pos="-0.32 0.395 0.018" material="led_glow_red"/>
+      <geom name="prop_rl" type="cylinder" size="0.20 0.003" pos="-0.32 0.36 0.080" material="prop_translucent" contype="0" conaffinity="0"/>
+
+      <geom name="motor_base_rr" type="cylinder" size="0.034 0.022" pos="-0.32 -0.36 0.032" material="body_dark_accent"/>
+      <geom name="motor_top_rr" type="cylinder" size="0.030 0.014" pos="-0.32 -0.36 0.064" material="motor_gunmetal"/>
+      <geom name="led_rr" type="sphere" size="0.009" pos="-0.32 -0.395 0.018" material="led_glow_red"/>
+      <geom name="prop_rr" type="cylinder" size="0.20 0.003" pos="-0.32 -0.36 0.080" material="prop_translucent" contype="0" conaffinity="0"/>
+
+      <!-- 6. Integrated Rubber Feet -->
+      <geom name="foot_fl" type="box" size="0.016 0.016 0.024" pos="0.32 0.36 -0.020" material="hub_black"/>
+      <geom name="foot_fr" type="box" size="0.016 0.016 0.024" pos="0.32 -0.36 -0.020" material="hub_black"/>
+      <geom name="foot_rl" type="box" size="0.016 0.016 0.024" pos="-0.32 0.36 -0.008" material="hub_black"/>
+      <geom name="foot_rr" type="box" size="0.016 0.016 0.024" pos="-0.32 -0.36 -0.008" material="hub_black"/>
+
+      <site name="imu_site" pos="0 0 0"/>
+    </body>
+
+  </worldbody>
+
+  <!-- Actuators: Preserving all flight physics -->
+  <actuator>
+    <general name="thrust_z" joint="drone_free" gear="0 0 1 0 0 0" ctrllimited="true" ctrlrange="0 100"/>
+    <general name="force_x" joint="drone_free" gear="1 0 0 0 0 0" ctrllimited="true" ctrlrange="-50 50"/>
+    <general name="force_y" joint="drone_free" gear="0 1 0 0 0 0" ctrllimited="true" ctrlrange="-50 50"/>
+    <general name="torque_z" joint="drone_free" gear="0 0 0 0 0 1" ctrllimited="true" ctrlrange="-5 5"/>
+  </actuator>
+
+</mujoco>
