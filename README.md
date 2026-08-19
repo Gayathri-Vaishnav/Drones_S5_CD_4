@@ -10,8 +10,8 @@
 ### *Team Members*
 Police Aryan - CB.SC.U4AIE24241\
 Gayathri Vaishnav - CB.SC.U4AIE24337\
-Rohit Vardhan  - \
-Sai Reddy -\
+Rohit Vardhan  - CB.SC.U4AIE24231\
+Sai Reddy - CB.SC.U4AIE24205\
 Sairi Manvik - 
 
 ### 1. Introduction 
