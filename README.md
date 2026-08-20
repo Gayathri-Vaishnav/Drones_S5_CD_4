@@ -66,7 +66,7 @@ $$
 | `u, v` | Pixel coordinates in the digital image |
 | `u₀, v₀` | Principal point — optical centre of the camera |
 
-**Explanation:** The camera sensor records light on a continuous physical plane, but a digital image is stored as a discrete pixel grid. This equation converts real-world image-plane coordinates into pixel coordinates (and vice-versa), which is the first step before any pose estimation can happen — the AprilTag corner detector operates in pixel space, but geometric pose math needs metric image-plane coordinates.
+**Explanation:** The camera sensor records the light on a continuous physical plane, but a digital image is stored as a discrete pixel grid. This equation converts real-world image-plane coordinates into pixel coordinates (and vice-versa), which is the first step before any pose estimation can happen — the AprilTag corner detector operates in pixel space, but geometric pose math needs metric image-plane coordinates.
 
 ---
 
