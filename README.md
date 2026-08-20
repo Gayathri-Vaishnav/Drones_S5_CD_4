@@ -220,6 +220,41 @@ $$
 
 **In plain words:** Think of `v` as a small arrow (like "the tag is 2 meters that way"). To rotate that arrow using a quaternion, you "sandwich" it — multiply the quaternion on one side and its conjugate on the other. What comes out is the same arrow, just rotated.
 
+
+
+### Coordinate Frame Transformation & Sandwich Operator
+
+The onboard camera measures position error in its own optical frame, but the flight controller requires this error expressed in the drone's **body frame** ($B$). As the quadrotor tilts and pitches during flight, these two coordinate frames no longer align.
+
+
+
+Camera Frame (C)  ───[ Sandwich Operator: q v q⁻¹ ]───►  Body Frame (B)  ───►  PID Controller
+(Raw Error Vector)                                     (Aligned Error)       (Actuator Commands)
+
+
+
+#### Why the Sandwich Operator is Required
+
+* **Quaternion Representation:** A unit quaternion $\mathbf{q}$ stores the 3D orientation/tilt of the vehicle, but a quaternion alone cannot rotate a 3D vector without an algebraic operator.
+* **Double-Cover & Distortion Elimination:** Simple left-multiplication ($\mathbf{q}\mathbf{v}$) produces a four-dimensional result with unwanted scaling/projection artifacts. The **Sandwich Operator** maps a pure spatial vector back into the 3-vector space cleanly:
+
+$$v' = q \, v \, q^{-1}$$
+
+Where:
+* $v = [0, \mathbf{e}_{cam}]^T$ is the raw visual position error treated as a pure vector quaternion.
+* $q$ is the unit attitude quaternion representing current vehicle tilt.
+* $q^{-1} = q^*$ is the quaternion conjugate (inverse for unit quaternions).
+* $v' = [0, \mathbf{e}_{body}]^T$ is the transformed position error vector.
+
+#### Integration in Control Loop
+
+The resulting vector $v'$ represents the exact relative position error re-expressed in the drone's body frame:
+
+$$\mathbf{e}_{body} = \text{vec}\left( q \, [0, \mathbf{e}_{cam}] \, q^{-1} \right)$$
+
+This transformed error is routed directly into the **PID controller** to generate accurate thrust, roll, and pitch commands without frame misalignment errors.
+
+
 | Variable | What it is | Why it's needed |
 |---|---|---|
 | `q` | The quaternion describing the rotation (from step A) | The "rotation instruction" |
