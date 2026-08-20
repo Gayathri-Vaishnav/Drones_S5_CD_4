@@ -51,9 +51,7 @@ By combining the proven vision-based landing architecture of the base paper with
 
 ### 3.2  Base paper math:
 
-## Mathematical Foundation of the Base Paper
-
-## Base Paper Equations 
+## Base Paper Equations (Li et al., 2019 — No Quaternions)
 
 ### 1. Pixel Conversion (Camera → Digital Image)
 
@@ -61,13 +59,13 @@ $$
 u = \frac{x}{dx} + u_0 \qquad v = \frac{y}{dy} + v_0
 $$
 
- A camera sensor sees the world as a continuous picture, but a computer stores it as a grid of pixels (like graph paper). This equation just says: "take the real position on the sensor and tell me which pixel box it lands in."
+**In plain words:** A camera sensor sees the world as a continuous picture, but a computer stores it as a grid of pixels (like graph paper). This equation just says: "take the real position on the sensor and tell me which pixel box it lands in."
 
 | Variable | What it is | Why it's needed |
 |---|---|---|
 | `x, y` | Where a point actually is on the camera sensor (in millimeters) | This is the "real" physical location before we turn it into pixels |
-| `dx, dy` | How big one pixel is (in millimeters) | Tells us how many pixels fit into one millimeter — this is what does the mm → pixel conversion |
-| `u, v` | The pixel address of that point (like column, row) | This is what the computer actually works with — an image is just numbers in a pixel grid |
+| `dx, dy` | How big one pixel is (in millimeters) | Tells us how many pixels fit into one millimeter — this does the mm → pixel conversion |
+| `u, v` | The pixel address of that point (column, row) | This is what the computer actually works with — an image is just numbers in a pixel grid |
 | `u0, v0` | The pixel at the exact center of the image | Cameras don't always have their center at pixel (0,0), so we shift by this amount to correct for that |
 
 ---
@@ -83,12 +81,12 @@ R_x(\phi) =
 \end{bmatrix}
 $$
 
- Imagine tilting a tray left-to-right — that's roll. This matrix is just a "tilt calculator": you give it an angle, and it tells you how every point on the tray moves.
+**In plain words:** Imagine tilting a tray left-to-right — that's roll. This matrix is a "tilt calculator": give it an angle, and it tells you how every point on the tray moves.
 
 | Variable | What it is | Why it's needed |
 |---|---|---|
 | `φ` (phi) | The roll angle — how much the drone/tag is tilted sideways | Without this, we can't tell how the object rotated around one axis |
-| `R_x(φ)` | The 3×3 matrix itself | It's a reusable "rotation machine" — multiply it with a point and it spins that point by angle φ |
+| `R_x(φ)` | The 3×3 matrix itself | A reusable "rotation machine" — multiply it with a point and it spins that point by angle φ |
 
 ---
 
@@ -98,18 +96,57 @@ $$
 R = R_z(\psi)\, R_y(\theta)\, R_x(\phi)
 $$
 
- A drone doesn't just tilt in one direction — it rolls, pitches (nose up/down), and yaws (spins left/right) all at once. So we just chain three simple tilt calculators together to get the *full* rotation.
+**In plain words:** A drone doesn't just tilt in one direction — it rolls, pitches (nose up/down), and yaws (spins left/right) all at once. Chaining three simple tilt calculators together gives the *full* rotation.
 
 | Variable | What it is | Why it's needed |
 |---|---|---|
 | `ψ` (psi) | Yaw angle — spinning left/right | Captures rotation around the vertical axis |
 | `θ` (theta) | Pitch angle — nose up/down | Captures forward/backward tilt |
 | `φ` (phi) | Roll angle — tilting side to side | Captures sideways tilt |
-| `R` | The combined 3×3 rotation matrix | This single matrix now fully describes the tag's orientation relative to the camera |
+| `R` | The combined 3×3 rotation matrix | **This is the base paper's final answer for orientation** — no quaternion involved |
 
 ---
 
-### 4. Turning the Rotation Matrix into a Quaternion
+### 4. PID Controller (Turning Error into Speed Commands)
+
+$$
+V = K_p \cdot e \;+\; K_i \int e\, dt \;+\; K_d \cdot (e - e_{prev})
+$$
+
+**In plain words:** "How fast should the drone move to fix its position error?" It looks at three things — how far off you are *right now*, how far off you've *been* over time, and how *quickly* the error is changing — and blends all three into one speed command.
+
+| Variable | What it is | Why it's needed |
+|---|---|---|
+| `e` | The current position error (how far the drone is from where it should be) | The main signal — no error means no correction needed |
+| `Kp · e` | Proportional term — reacts to the error right now | Bigger error → bigger push toward the target |
+| `Ki ∫e dt` | Integral term — adds up all past error over time | Corrects small, persistent errors (like drift) that proportional alone can't fix |
+| `Kd(e − e_prev)` | Derivative term — reacts to how fast the error is changing | Acts like a brake — stops overshoot and oscillation |
+| `Kp, Ki, Kd` | Tuning knobs (gains) for each term | Control how aggressive or gentle each correction is |
+| `V` | The final speed command sent to the drone | The actual output that moves the drone |
+
+---
+
+### 5. Position Error
+
+$$
+\text{Error} = \text{Desired Position} - \text{Current Position}
+$$
+
+**In plain words:** "Where you want to be" minus "where you actually are." That gap is what the PID controller above is trying to shrink to zero.
+
+| Variable | What it is | Why it's needed |
+|---|---|---|
+| Desired Position | Where the drone should be (usually right above the tag) | The target — set by the landing task |
+| Current Position | Where the drone actually is, from AprilTag pose estimation | Our best real-time estimate of the truth |
+| Error | The gap between the two | Drives the entire PID control loop |
+
+---
+
+## Our Contribution (Not in the Base Paper)
+
+The base paper stops at equation 3 — a plain rotation matrix. **Everything below is our own addition**, applying quaternion theory from course 22AIE448.
+
+### A. Turning the Rotation Matrix into a Quaternion
 
 $$
 q_0 = \frac{1}{2}\sqrt{1 + r_{11} + r_{22} + r_{33}}
@@ -121,65 +158,28 @@ q_2 = \frac{r_{13} - r_{31}}{4q_0}, \quad
 q_3 = \frac{r_{21} - r_{12}}{4q_0}
 $$
 
- The rotation matrix above works fine, but it uses 9 numbers to describe something that really only needs 4. This equation squeezes that same rotation into just 4 numbers — a quaternion — which is lighter to compute with and doesn't get "stuck" the way the matrix can.
+**In plain words:** The base paper's rotation matrix works fine, but it uses 9 numbers to describe something that only needs 4. This equation squeezes that same rotation into 4 numbers — a quaternion — which is lighter to compute with and doesn't get "stuck" (gimbal lock) the way the matrix can.
 
 | Variable | What it is | Why it's needed |
 |---|---|---|
-| `r_ij` | A single number sitting in row `i`, column `j` of the rotation matrix `R` | These are just the raw ingredients — we're reading values straight out of the matrix from step 3 |
-| `q0` | The "how much rotation" part of the quaternion | This is the main number that tells you the size of the rotation |
-| `q1, q2, q3` | The "which direction" part of the quaternion (a 3D arrow) | Together with q0, this arrow + amount fully describes the same rotation as the matrix — just more compactly |
+| `r_ij` | A number from row `i`, column `j` of the base paper's rotation matrix `R` | The raw ingredients — read straight out of the base paper's own matrix |
+| `q0` | The "how much rotation" part of the quaternion | Tells you the size of the rotation |
+| `q1, q2, q3` | The "which direction" part of the quaternion (a 3D arrow) | Together with q0, fully describes the same rotation — just more compactly |
 
----
-
-### 5. Rotating a Vector with a Quaternion (Sandwich Operator)
+### B. Rotating a Vector with a Quaternion (Sandwich Operator)
 
 $$
 L_q(v) = q\, v\, q^{*}
 $$
 
- Think of `v` as a small arrow (like "the tag is 2 meters that way"). To rotate that arrow using a quaternion, you "sandwich" it — multiply the quaternion on one side and its mirror-image (conjugate) on the other. What comes out is the same arrow, just rotated.
+**In plain words:** Think of `v` as a small arrow (like "the tag is 2 meters that way"). To rotate that arrow using a quaternion, you "sandwich" it — multiply the quaternion on one side and its conjugate on the other. What comes out is the same arrow, just rotated.
 
 | Variable | What it is | Why it's needed |
 |---|---|---|
-| `q` | The quaternion describing the rotation (from step 4) | This is the "rotation instruction" |
-| `q*` | The conjugate of `q` — basically `q` flipped/reversed | Needed to "undo" the extra rotation math and leave you with a clean, correctly rotated vector |
-| `v` | The vector being rotated — here, the tag's position | This is the actual thing we care about moving — we want to know where the tag is *relative to the drone*, not the camera |
-| `L_q(v)` | The final, rotated vector | This is the answer — the tag's position now expressed in the drone's own frame of reference |
-
----
-
-### 6. PID Controller (Turning Error into Speed Commands)
-
-$$
-V = K_p \cdot e \;+\; K_i \int e\, dt \;+\; K_d \cdot (e - e_{prev})
-$$
-
- This is just "how fast should the drone move to fix its position error?" It looks at three things: how far off you are *right now*, how far off you've *been* over time, and how *quickly* the error is changing — and blends all three into one speed command.
-
-| Variable | What it is | Why it's needed |
-|---|---|---|
-| `e` | The current position error (how far the drone is from where it should be) | This is the main signal — no error means no correction needed |
-| `Kp · e` | Proportional term — reacts to the error right now | Bigger error → bigger push. This is the main "push toward target" force |
-| `Ki ∫e dt` | Integral term — adds up all past error over time | Corrects for small, persistent errors that proportional alone can't fully fix (like drift) |
-| `Kd(e − e_prev)` | Derivative term — looks at how fast the error is changing | Acts like a brake — stops the drone from overshooting or oscillating |
-| `Kp, Ki, Kd` | Tuning knobs (gains) for each term | These control how aggressive or gentle each correction is — set by testing, not calculated |
-| `V` | The final speed command sent to the drone | This is the actual output — what makes the drone actually move |
-
----
-
-### 7. Position Error
-
-$$
-\text{Error} = \text{Desired Position} - \text{Current Position}
-$$
-
- This is the simplest equation here — it's just "where you want to be" minus "where you actually are." That difference is what every PID controller above is trying to shrink to zero.
-
-| Variable | What it is | Why it's needed |
-|---|---|---|
-| Desired Position | Where the drone should be (usually right above the tag) | This is the target — set by the landing task itself |
-| Current Position | Where the drone actually is, as measured by the AprilTag | This comes from the vision pipeline — it's our best real-time estimate of the truth |
-| Error | The gap between the two | This single number (per axis) is what drives the entire PID control loop |
+| `q` | The quaternion describing the rotation (from step A) | The "rotation instruction" |
+| `q*` | The conjugate of `q` — `q` flipped/reversed | Needed to correctly complete the rotation and leave a clean result |
+| `v` | The vector being rotated — here, the tag's position | We want the tag's position *relative to the drone*, not the camera |
+| `L_q(v)` | The final, rotated vector | The tag's position now expressed in the drone's own frame of reference |
 
 
 ### 3.3  Base paper link:
@@ -207,171 +207,8 @@ Our implementation is a full physics-based simulation of the base paper's pipeli
 
 This differs from the base paper in two important ways: pose estimation uses OpenCV's iterative PnP solver instead of a closed-form rotation-matrix decomposition, and the controller is phase-aware (it changes behaviour by altitude/lock state) rather than a single flat PID loop — closer to how a real onboard autopilot would behave.
 
-## Equations Used in the Implementation
 
-### 1. Pinhole Camera Projection
 
-Each 3D world point is projected into image pixel coordinates:
-
-```math
-p_{cam} = R_{cb} \, R_{wb}(p_{world} - p_{drone})
-```
-
-```math
-\begin{bmatrix} u \\ v \end{bmatrix} = \frac{1}{z_{cam}}
-\begin{bmatrix} f_x & 0 & c_x \\ 0 & f_y & c_y \end{bmatrix} p_{cam}
-```
-
-| Symbol | Meaning |
-|---|---|
-| `R_wb` | World → body rotation matrix (from roll, pitch) |
-| `R_cb` | Body → camera rotation matrix (fixed downward-facing mount) |
-| `f_x, f_y` | Focal lengths (650 px) |
-| `c_x, c_y` | Principal point (image centre, 320, 240) |
-
-This is the forward model used to *render* the synthetic camera image of the tag and landing pad.
-
----
-
-### 2. World-to-Body and Body-to-Camera Rotations
-
-```math
-R_{wb} =
-\begin{bmatrix} \cos\theta & 0 & \sin\theta \\ 0 & 1 & 0 \\ -\sin\theta & 0 & \cos\theta \end{bmatrix}
-\begin{bmatrix} 1 & 0 & 0 \\ 0 & \cos\phi & -\sin\phi \\ 0 & \sin\phi & \cos\phi \end{bmatrix}
-```
-
-```math
-R_{cb} =
-\begin{bmatrix} 0 & 1 & 0 \\ -1 & 0 & 0 \\ 0 & 0 & 1 \end{bmatrix}
-```
-
-`R_wb` combines pitch (`θ`) and roll (`φ`) into a single rotation; `R_cb` is a fixed axis realignment from the drone body frame into the downward-facing camera frame.
-
----
-
-### 3. Pose Recovery via Perspective-n-Point (PnP)
-
-Given the 4 detected tag corners in the image and their known real-world corner positions, OpenCV solves for the rotation vector `r` and translation vector `t` that minimize reprojection error:
-
-```math
-\arg\min_{r,\,t} \sum_{i=1}^{4} \left\| \text{proj}(X_i,\, r,\, t) - x_i \right\|^2
-```
-
-| Symbol | Meaning |
-|---|---|
-| `X_i` | Known 3D tag corner in the tag's own frame |
-| `x_i` | Corresponding detected 2D pixel coordinate |
-| `proj(·)` | Pinhole projection function |
-| `r, t` | Rotation vector and translation vector of the tag relative to the camera |
-
-This replaces the closed-form rotation-matrix decomposition used in the base paper with an iterative optimization — standard practice in real vision pipelines.
-
----
-
-### 4. Altitude and Lateral Offset Extraction
-
-```math
-\text{offset} = R_{wb}^{T} \left( R_{cb}^{T}\, t \right)
-```
-
-```math
-\text{alt} = \text{offset}_z \qquad \text{east\_err} = \text{offset}_y \qquad \text{north\_err} = \text{offset}_x
-```
-
-The camera-frame translation vector `t` from PnP is rotated back through body and world frames to recover the drone's true altitude and lateral position error relative to the tag.
-
----
-
-### 5. Exponential Moving Average (EMA) Measurement Filter
-
-```math
-\hat{x}_k = \alpha \, x_k + (1-\alpha)\, \hat{x}_{k-1}, \qquad \alpha = 0.55
-```
-
-Smooths noisy per-frame pose measurements `x_k` into a filtered estimate `\hat{x}_k`, reducing jitter from detection noise before the value reaches the controller.
-
----
-
-### 6. Quaternion to Euler Angle Conversion
-
-The drone's true attitude is read from MuJoCo as a unit quaternion `q = (w, x, y, z)` and converted to roll, pitch, yaw:
-
-```math
-\text{roll} = \arctan2\big(2(wx + yz),\; 1 - 2(x^2 + y^2)\big)
-```
-
-```math
-\text{pitch} = \arcsin\big(2(wy - zx)\big)
-```
-
-```math
-\text{yaw} = \arctan2\big(2(wz + xy),\; 1 - 2(y^2 + z^2)\big)
-```
-
-This is the quaternion-to-Euler conversion (the inverse operation of the base paper's rotation-matrix-to-quaternion step) — used here to feed Euler-based attitude into the vision projection model.
-
----
-
-### 7. PID Axis Update (with Anti-Windup and Output Clamping)
-
-```math
-I_k = \text{clip}\big(I_{k-1} + e_k,\; -I_{max},\; I_{max}\big)
-```
-
-```math
-v_{cmd} = K_p e_k + K_i I_k + K_d (e_k - e_{k-1})
-```
-
-```math
-v_{cmd} = \text{clip}(v_{cmd},\; -v_{max},\; v_{max})
-```
-
-**Gains:** `Kp = 0.20, Ki = 0.03, Kd = 0.35` (lateral axes); `Kp = 0.25, Ki = 0.02, Kd = 0.30` (vertical axis)
-
-Unlike the base paper's unbounded PID formula, the implementation clamps the integral term (anti-windup) and the final output (actuator saturation) — both necessary for physical realism in simulation.
-
----
-
-### 8. Lateral Force Command
-
-```math
-a_x = K_{v,lat}(v_{x,cmd} - v_x), \qquad a_y = K_{v,lat}(v_{y,cmd} - v_y)
-```
-
-```math
-\text{if } \|a\| > a_{max}: \quad a \leftarrow a \cdot \frac{a_{max}}{\|a\|}
-```
-
-```math
-F_x = m\,a_x, \qquad F_y = m\,a_y
-```
-
-The PID output is a *velocity* command; a proportional velocity-tracking loop (`K_v,lat = 2.0`) converts it into acceleration, which is clipped to `MAX_ACC = 4.0 m/s²` and scaled to a force by drone mass `m = 3.5 kg`.
-
----
-
-### 9. Vertical Thrust Command
-
-```math
-a_z = \text{clip}\big(K_{v,z}(v_{z,cmd} - v_z),\; -3.5,\; 6.0\big)
-```
-
-```math
-F_{z,up} = \text{clip}\big(T_{hover} - m\,a_z,\; 0,\; 75\big), \qquad T_{hover} = mg
-```
-
-The total upward thrust is the hover thrust `T_hover = mg = 34.335 N` adjusted by the commanded vertical acceleration, clipped to stay within realistic rotor thrust limits (and reduced to 75% during the final `LAND` phase for a soft touchdown).
-
----
-
-### 10. Landing Condition
-
-```math
-\text{landed} = (\text{alt} < 0.15\,\text{m}) \;\wedge\; (|v_z| < 0.35\,\text{m/s})
-```
-
-Landing is only declared once the drone is both low enough and moving slowly enough vertically — avoiding a false "landed" trigger mid-descent.
 ### 6.Methodology Block Diagram
 
 <h2 align="center">Fig 6.1</h2>
