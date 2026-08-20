@@ -262,9 +262,7 @@ This differs from the base paper in two important ways: pose estimation uses Ope
 <img width="700" height="700" alt="image" src="https://github.com/user-attachments/assets/6e49ec3c-b354-4c10-9adc-d0728c1e1b22" />
 </p>
 
-### 7.Results <img width="1600" height="935" alt="Dynamic Target Tracking " src="https://github.com/user-attachments/assets/dd131303-11a2-4e93-9c83-741d26b4e3cd" />
-<img width="1600" height="1198" alt="Autonomus Fixed Point Landing " src="https://github.com/user-attachments/assets/8177c24b-de81-4ca0-9031-652d404b66ba" />
-<img width="1600" height="613" alt="Simulation vs paper -- Trajectory Key points " src="https://github.com/user-attachments/assets/93059594-1845-433c-8598-c16c512cd400" />
+### 7.Results
 
 
 ### 8.Conclusion
