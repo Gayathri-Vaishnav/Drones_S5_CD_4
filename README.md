@@ -74,6 +74,8 @@ $$
 
 ---
 
+## After this they use a library called pupil_apriltags that identifies the april tag and then continues the future steps 
+
 ### 2. One-Axis Rotation (Roll)
 
 $$
