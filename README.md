@@ -264,6 +264,13 @@ This differs from the base paper in two important ways: pose estimation uses Ope
 
 ### 7.Results
 
+<img width="1919" height="1079" alt="Screenshot 2026-08-20 172216" src="https://github.com/user-attachments/assets/5578fd25-4eea-4955-9043-874da225b3f1" />
+<img width="1934" height="742" alt="trajectory_summary" src="https://github.com/user-attachments/assets/246ad55c-c675-4e80-b1f0-66becbccce63" />
+<img width="1934" height="1183" alt="pid_comparison_plots" src="https://github.com/user-attachments/assets/a8fc12bc-8819-4eb7-9a15-b71622edbe16" />
+<img width="1771" height="1036" alt="dynamic_tracking_plots" src="https://github.com/user-attachments/assets/6d8aaddf-aad3-4c52-b431-5fa158a2c749" />
+
+
+
 
 ### 8.Conclusion
 
