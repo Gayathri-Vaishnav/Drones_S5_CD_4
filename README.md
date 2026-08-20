@@ -146,26 +146,68 @@ $$
 
 The base paper stops at equation 3 — a plain rotation matrix. **Everything below is our own addition**, applying quaternion theory from course 22AIE448.
 
-### A. Turning the Rotation Matrix into a Quaternion
+## A. Turning the Rotation Matrix into a Quaternion
+
+Given the Euler angles:
 
 $$
-q_0 = \frac{1}{2}\sqrt{1 + r_{11} + r_{22} + r_{33}}
+\phi = \text{Roll}, \qquad \theta = \text{Pitch}, \qquad \psi = \text{Yaw}
+$$
+
+Define the sine and cosine of the half-angles:
+
+$$
+c_x = \cos\left(\frac{\phi}{2}\right), \qquad s_x = \sin\left(\frac{\phi}{2}\right)
 $$
 
 $$
-q_1 = \frac{r_{32} - r_{23}}{4q_0}, \quad
-q_2 = \frac{r_{13} - r_{31}}{4q_0}, \quad
-q_3 = \frac{r_{21} - r_{12}}{4q_0}
+c_y = \cos\left(\frac{\theta}{2}\right), \qquad s_y = \sin\left(\frac{\theta}{2}\right)
 $$
 
-**In plain words:** The base paper's rotation matrix works fine, but it uses 9 numbers to describe something that only needs 4. This equation squeezes that same rotation into 4 numbers — a quaternion — which is lighter to compute with and doesn't get "stuck" (gimbal lock) the way the matrix can.
+$$
+c_z = \cos\left(\frac{\psi}{2}\right), \qquad s_z = \sin\left(\frac{\psi}{2}\right)
+$$
+
+The quaternion is calculated as:
+
+$$
+q = w + xi + yj + zk
+$$
+
+where:
+
+$$
+w = c_x c_y c_z + s_x s_y s_z
+$$
+
+$$
+x = s_x c_y c_z - c_x s_y s_z
+$$
+
+$$
+y = c_x s_y c_z + s_x c_y s_z
+$$
+
+$$
+z = c_x c_y s_z - s_x s_y c_z
+$$
+
+Therefore, the quaternion is:
+
+**q = [w, x, y, z]ᵀ**
+
+where:
+
+- w = cₓ·c_y·c_z + sₓ·s_y·s_z
+- x = sₓ·c_y·c_z − cₓ·s_y·s_z
+- y = cₓ·s_y·c_z + sₓ·c_y·s_z
+- z = cₓ·c_y·s_z − sₓ·s_y·c_z
 
 | Variable | What it is | Why it's needed |
 |---|---|---|
-| `r_ij` | A number from row `i`, column `j` of the base paper's rotation matrix `R` | The raw ingredients — read straight out of the base paper's own matrix |
-| `q0` | The "how much rotation" part of the quaternion | Tells you the size of the rotation |
-| `q1, q2, q3` | The "which direction" part of the quaternion (a 3D arrow) | Together with q0, fully describes the same rotation — just more compactly |
-
+| $r_{ij}$ | The element in row $i$, column $j$ of the rotation matrix $R$ | The raw ingredients — read directly from the rotation matrix |
+| $q_0 \ (= w)$ | The "how much rotation" part of the quaternion (the scalar/real part) | Tells you the *size* (angle) of the rotation |
+| $q_1, q_2, q_3 \ (= x, y, z)$ | The "which direction" part of the quaternion (a 3D vector) | Together with $q_0$, fully describes the same rotation — just more compactly than a 3×3 matrix |
 ### B. Rotating a Vector with a Quaternion (Sandwich Operator)
 
 $$
